@@ -9,6 +9,13 @@ Servo servo;
 
 Motor motor(1,2,3,4,5,5)*/
 
+// Motor Pins: 15,13,12,14
+
+int voltageWarner = 0;
+int rawVal;
+float voltage;
+float batteryVoltage;
+
 typedef struct struct_inc_data {
   float x;
   float y;
@@ -35,20 +42,46 @@ void setup() {
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
   esp_now_register_recv_cb(receivedDataCallback);
   servo.attach(5);
+  pinMode(voltageWarner, OUTPUT);
 }
 
 
 void loop() {
+  rawVal = analogRead(A0);
+  voltage = rawVal * (3.3/ 1023.0); //Gemessene Spannung am Spannugsteiler
+  batteryVoltage = voltage * ((22000 + 10000)/10000); //Eigentliche Spannung der Batterie
+  Serial.println("Voltage: " + String(batteryVoltage) + " Volt");
+  if(batteryVoltage <= 6.5){
+    digitalWrite(voltageWarner, HIGH);
+  }
+  else {
+    digitalWrite(voltageWarner, LOW);
+  }
+
   int servoPos = map(incomingData.x * 100, -100, 100, 0, 180);
   servo.write(servoPos);
-  /*
-  if(incomingData.x > 0.25){
-    //servo links motor vorne
+  analogWrite(15, map(incomingData.y * 100, -100, 100, 0, 255));
+  analogWrite(14, map(incomingData.y * 100, -100, 100, 0, 255));
+  if(incomingData.y < -0.25){
+    analogWrite(15, map(incomingData.y * 100, 0, -100, 0,255));
+    analogWrite(14, map(incomingData.y * 100, 0, -100, 0,255));
+    digitalWrite(13, LOW);
+    digitalWrite(12, LOW);
   }
-  
-  if(incomingData.x < -0.25){
-    //servo rechts motor vorne
+
+  if(incomingData.y > 0.25){
+    analogWrite(13, map(incomingData.y * 100, 0, 100, 0,255));
+    analogWrite(12, map(incomingData.y * 100, 0, 100, 0,255));
+    digitalWrite(14, LOW);
+    digitalWrite(15, LOW);
   }
-  */
+
+  if(incomingData.y > -0.25 && incomingData.y < 0.25){
+    digitalWrite(12,LOW);
+    digitalWrite(13,LOW);
+    digitalWrite(14,LOW);
+    digitalWrite(15,LOW);
+  }
+
   delay(20);
 }
