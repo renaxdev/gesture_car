@@ -4,12 +4,6 @@
 
 Servo servo;
 
-/*
-#include <MotorControl.h>
-
-Motor motor(1,2,3,4,5,5)*/
-
-// Motor Pins: 15,13,12,14
 
 int voltageWarner = 0;
 int rawVal;
@@ -36,7 +30,6 @@ void receivedDataCallback( uint8_t *mac, uint8_t *data, uint8_t len ){
 
 void setup() {
   Serial.begin( 115200 ); 
-  //nix yalmotor.begin();
   WiFi.mode( WIFI_STA );
   esp_now_init();
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
